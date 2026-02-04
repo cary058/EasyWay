@@ -68,6 +68,7 @@ const App = {
   // =================================
   Map: {
     instance: null,
+    routingControl: null,
 
     init() {
       this.instance = L.map('map', { zoomControl: false }).setView(App.Config.center, App.Config.zoom);
@@ -103,18 +104,30 @@ const App = {
       App.State.markers = [];
     },
 
-    drawRoute(coords) {
-      if (App.State.routeLayer) App.State.routeLayer.remove();
+    drawRoute(start, end) {
+  if (this.routingControl) {
+    this.routingControl.remove();
+  }
 
-      App.State.routeLayer = L.polyline(coords, {
-        color: '#2563eb',
-        weight: 6,
-        opacity: 0.8,
-        lineCap: 'round'
-      }).addTo(this.instance);
-
-      this.instance.fitBounds(coords, { padding: [50, 50] });
+  this.routingControl = L.Routing.control({
+    waypoints: [
+      L.latLng(start.lat, start.lng),
+      L.latLng(end.lat, end.lng)
+    ],
+    router: L.Routing.osrmv1({
+      serviceUrl: 'https://router.project-osrm.org/route/v1',
+      profile: 'foot'
+    }),
+    addWaypoints: false,
+    draggableWaypoints: false,
+    fitSelectedRoutes: true,
+    show: false,
+    lineOptions: {
+      styles: [{ color: '#2563eb', weight: 6 }]
     }
+  }).addTo(this.instance);
+}
+
   },
 
   // =================================
@@ -372,9 +385,30 @@ setupAutocomplete(inpId, listId, cb) {
       btn.disabled = true;
 
       try {
-        const route = await App.Router.calculate(App.State.start, App.State.end);
-        const latlngs = route.coordinates.map(p => [p.lat, p.lng]);
-        App.Map.drawRoute(latlngs);
+        drawRoute(start, end) {
+          if (this.routingControl) {
+            this.routingControl.remove();
+  }
+
+  this.routingControl = L.Routing.control({
+    waypoints: [
+      L.latLng(start.lat, start.lng),
+      L.latLng(end.lat, end.lng)
+    ],
+    router: L.Routing.osrmv1({
+      serviceUrl: 'https://router.project-osrm.org/route/v1',
+      profile: 'foot'
+    }),
+    addWaypoints: false,
+    draggableWaypoints: false,
+    fitSelectedRoutes: true,
+    show: false,
+    lineOptions: {
+      styles: [{ color: '#2563eb', weight: 6 }]
+    }
+  }).addTo(this.instance);
+}
+
 
       } catch (err) {
         alert(err);
@@ -404,23 +438,18 @@ setupAutocomplete(inpId, listId, cb) {
     (pos) => {
       const { latitude, longitude } = pos.coords;
 
-      if (this.userMarker) {
-        this.userMarker.remove();
+      // ❗ маркер храним в App.Map, а не в Controllers
+      if (App.Map.userMarker) {
+        App.Map.userMarker.remove();
       }
 
-      this.userMarker = L.marker([latitude, longitude], {
-        icon: L.divIcon({
-          html: '🧍',
-          iconSize: [24, 24],
-          className: ''
-        })
-      }).addTo(App.Map.instance);
-
+      App.Map.userMarker = L.marker([latitude, longitude]).addTo(App.Map.instance);
       App.Map.instance.flyTo([latitude, longitude], 17);
     },
     () => {
-      alert("Не удалось получить местоположение");
-    }
+      alert("Разрешите доступ к геолокации в браузере");
+    },
+    { enableHighAccuracy: true }
   );
 },
 
