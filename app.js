@@ -373,7 +373,9 @@ setupAutocomplete(inpId, listId, cb) {
 
       try {
         const route = await App.Router.calculate(App.State.start, App.State.end);
-        App.Map.drawRoute(route.coordinates);
+        const latlngs = route.coordinates.map(p => [p.lat, p.lng]);
+        App.Map.drawRoute(latlngs);
+
       } catch (err) {
         alert(err);
       } finally {
