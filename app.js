@@ -378,9 +378,15 @@ const App = {
   },
 
   init() {
-    this.UI.init();
+  this.UI.init();
+
+  // ⬅️ дать браузеру дорисовать DOM
+  setTimeout(() => {
     this.Map.init();
     this.Router.init();
+  }, 0);
+}
+
   }
 };
 
