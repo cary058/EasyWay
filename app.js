@@ -387,7 +387,7 @@ const App = {
   }, 0);
 }
 
-  }
+  
 };
 
 // Start Application
