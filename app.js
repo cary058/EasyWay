@@ -276,6 +276,7 @@ setupAutocomplete(inpId, listId, cb) {
 
   inp.addEventListener('input', async (e) => {
     const res = await App.Search.query(e.target.value);
+    
     if (res.length) {
       list.innerHTML = res.map((r, i) => `
         <div class="suggestion-item" data-idx="${i}">
@@ -283,6 +284,7 @@ setupAutocomplete(inpId, listId, cb) {
           <div class="s-addr">${r.address}</div>
         </div>
       `).join('');
+      
       list.style.display = 'block';
 
       list.querySelectorAll('.suggestion-item').forEach(el => {
@@ -292,8 +294,7 @@ setupAutocomplete(inpId, listId, cb) {
           list.style.display = 'none';
         };
       });
-    }
-    else {
+    } else {
       list.style.display = 'none';
     }
   });
