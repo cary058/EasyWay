@@ -43,7 +43,6 @@ const App = {
   }
 },
 
-  },
 
   // =================================
   // 2. SEARCH ENGINE (MOCK 2GIS)
@@ -256,50 +255,56 @@ const App = {
     },
 
     bindEvents() {
-  this.setupAutocomplete('inp-start', 'sugg-start', (loc) => App.Controllers.setPoint('start', loc));
-  this.setupAutocomplete('inp-end', 'sugg-end', (loc) => App.Controllers.setPoint('end', loc));
+  this.setupAutocomplete('inp-start', 'sugg-start', (loc) =>
+    App.Controllers.setPoint('start', loc)
+  );
 
-  // 🔽 ВОТ ЭТО ДОБАВЬ
+  this.setupAutocomplete('inp-end', 'sugg-end', (loc) =>
+    App.Controllers.setPoint('end', loc)
+  );
+
   document.querySelectorAll('input[name="mobility"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       App.State.userProfile.mobility = e.target.value;
       console.log('Тип передвижения:', App.State.userProfile.mobility);
     });
   });
-}
+},
+setupAutocomplete(inpId, listId, cb) {
+  const inp = document.getElementById(inpId);
+  const list = document.getElementById(listId);
 
-    },
+  inp.addEventListener('input', async (e) => {
+    const res = await App.Search.query(e.target.value);
+    if (res.length) {
+      list.innerHTML = res.map((r, i) => `
+        <div class="suggestion-item" data-idx="${i}">
+          <div class="s-name">${r.name}</div>
+          <div class="s-addr">${r.address}</div>
+        </div>
+      `).join('');
+      list.style.display = 'block';
 
-    setupAutocomplete(inpId, listId, cb) {
-      const inp = document.getElementById(inpId);
-      const list = document.getElementById(listId);
-
-      inp.addEventListener('input', async (e) => {
-        const res = await App.Search.query(e.target.value);
-        if (res.length) {
-          list.innerHTML = res.map((r, i) => `
-                        <div class="suggestion-item" data-idx="${i}">
-                            <div class="s-name">${r.name}</div>
-                            <div class="s-addr">${r.address}</div>
-                        </div>
-                    `).join('');
-          list.style.display = 'block';
-          list.querySelectorAll('.suggestion-item').forEach(el => {
-            el.onclick = () => {
-              const item = res[el.dataset.idx];
-              cb(item);
-              list.style.display = 'none';
-            };
-          });
-        } else {
+      list.querySelectorAll('.suggestion-item').forEach(el => {
+        el.onclick = () => {
+          const item = res[el.dataset.idx];
+          cb(item);
           list.style.display = 'none';
-        }
+        };
       });
+    }
+    else {
+      list.style.display = 'none';
+    }
+  });
 
-      document.addEventListener('click', (e) => {
-        if (e.target !== inp && e.target !== list) list.style.display = 'none';
-      });
-    },
+  document.addEventListener('click', (e) => {
+    if (e.target !== inp && e.target !== list) {
+      list.style.display = 'none';
+    }
+  });
+},
+
 
     updateVal(id, val, suffix) {
       document.getElementById(`val-${id}`).textContent = val + suffix;
@@ -415,9 +420,6 @@ const App = {
     }
   );
 },
-
-      }
-    },
 
     startReport() {
       App.State.mode = 'report';
