@@ -385,9 +385,7 @@ const App = {
     this.Map.init();
     this.Router.init();
   }, 0);
-}
-
-  
+ }
 };
 
 // Start Application
