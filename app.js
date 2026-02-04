@@ -31,12 +31,18 @@ const App = {
   },
 
   State: {
-    start: null,
-    end: null,
-    routeLayer: null,
-    markers: [],
-    mode: 'view', // view, select_start, select_end, report
-    barrierMode: false
+  start: null,
+  end: null,
+  routeLayer: null,
+  markers: [],
+  mode: 'view',
+  barrierMode: false,
+
+  userProfile: {
+    mobility: 'wheelchair' // default
+  }
+},
+
   },
 
   // =================================
@@ -183,6 +189,34 @@ const App = {
                         <!-- Settings (Visual Only) -->
                         <div class="settings-section">
                             <h3>Параметры доступности</h3>
+                            <div class="setting-item">
+  <div class="setting-header">
+    <span>Тип передвижения</span>
+  </div>
+
+  <div class="radio-group">
+    <label>
+      <input type="radio" name="mobility" value="wheelchair" checked>
+      Инвалидная коляска
+    </label>
+
+    <label>
+      <input type="radio" name="mobility" value="wheelchair_helper">
+      Коляска с помощником
+    </label>
+
+    <label>
+      <input type="radio" name="mobility" value="stroller">
+      Детская коляска
+    </label>
+
+    <label>
+      <input type="radio" name="mobility" value="cane">
+      Трость / костыли
+    </label>
+  </div>
+</div>
+
                             
                             <div class="setting-item">
                                 <div class="setting-header">
@@ -222,8 +256,18 @@ const App = {
     },
 
     bindEvents() {
-      this.setupAutocomplete('inp-start', 'sugg-start', (loc) => App.Controllers.setPoint('start', loc));
-      this.setupAutocomplete('inp-end', 'sugg-end', (loc) => App.Controllers.setPoint('end', loc));
+  this.setupAutocomplete('inp-start', 'sugg-start', (loc) => App.Controllers.setPoint('start', loc));
+  this.setupAutocomplete('inp-end', 'sugg-end', (loc) => App.Controllers.setPoint('end', loc));
+
+  // 🔽 ВОТ ЭТО ДОБАВЬ
+  document.querySelectorAll('input[name="mobility"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      App.State.userProfile.mobility = e.target.value;
+      console.log('Тип передвижения:', App.State.userProfile.mobility);
+    });
+  });
+}
+
     },
 
     setupAutocomplete(inpId, listId, cb) {
@@ -343,12 +387,35 @@ const App = {
     },
 
     locateUser() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const { latitude, longitude } = pos.coords;
-          App.Map.instance.flyTo([latitude, longitude], 16);
-          // Optional: set as start
-        });
+  if (!navigator.geolocation) {
+    alert("Геолокация не поддерживается");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+
+      if (this.userMarker) {
+        this.userMarker.remove();
+      }
+
+      this.userMarker = L.marker([latitude, longitude], {
+        icon: L.divIcon({
+          html: '🧍',
+          iconSize: [24, 24],
+          className: ''
+        })
+      }).addTo(App.Map.instance);
+
+      App.Map.instance.flyTo([latitude, longitude], 17);
+    },
+    () => {
+      alert("Не удалось получить местоположение");
+    }
+  );
+},
+
       }
     },
 
