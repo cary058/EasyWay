@@ -66,9 +66,12 @@ const App = {
   // =================================
   // 3. MAP ENGINE
   // =================================
+ 
   Map: {
-    instance: null,
-    routingControl: null,
+  instance: null,
+  routingControl: null,
+  userMarker: null,
+
 
     init() {
       this.instance = L.map('map', { zoomControl: false }).setView(App.Config.center, App.Config.zoom);
@@ -377,17 +380,25 @@ setupAutocomplete(inpId, listId, cb) {
     async buildRoute() {
       if (!App.State.start || !App.State.end) {
         alert("Выберите обе точки маршрута!");
-        return;
-      }
+    return;
+  }
 
-      const btn = document.getElementById('btn-go');
-      btn.textContent = "Маршрутизация...";
-      btn.disabled = true;
+  const btn = document.getElementById('btn-go');
+  btn.textContent = "Маршрутизация...";
+  btn.disabled = true;
 
-      try {
-        drawRoute(start, end) {
-          if (this.routingControl) {
-            this.routingControl.remove();
+  try {
+    // 👉 ВЫЗЫВАЕМ метод карты
+    App.Map.drawRoute(App.State.start, App.State.end);
+
+  } catch (err) {
+    alert("Ошибка построения маршрута");
+  } finally {
+    btn.textContent = "Построить";
+    btn.disabled = false;
+  }
+}
+
   }
 
   this.routingControl = L.Routing.control({
