@@ -17,7 +17,15 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div id="app"></div>
+    <div id="map" style="width:100%; height:100vh;"></div>
+
+<div style="position:absolute; top:10px; left:10px; z-index:1000;">
+  <button id="btn-start">Старт</button>
+  <button id="btn-end">Финиш</button>
+  <button id="btn-go">Построить</button>
+  <button id="btn-locate">📍 Я здесь</button>
+</div>
+
     <script src="./app.js" defer></script>
 </body>
 </html>
