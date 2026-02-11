@@ -1,5 +1,5 @@
 /**
- * Accessibility Drones - Stable Release
+ * Accessibility Drones - Stable Working Version
  */
 
 const App = {
@@ -20,6 +20,8 @@ const App = {
     start: null,
     end: null,
     markers: [],
+    routingControl: null,
+    userMarker: null,
     userProfile: {
       mobility: 'wheelchair'
     }
@@ -29,9 +31,6 @@ const App = {
   // MAP
   // ==============================
   Map: {
-    instance: null,
-    routingControl: null,
-    userMarker: null,
 
     init() {
       this.instance = L.map('map', { zoomControl: false })
@@ -54,12 +53,13 @@ const App = {
       const marker = L.marker([lat, lng], {
         icon: L.divIcon({
           className: '',
-          html: `<div style="background:${color};
-                               width:24px;
-                               height:24px;
-                               border:3px solid white;
-                               border-radius:50%"></div>`,
-          iconSize: [24, 24]
+          html: `<div style="
+            background:${color};
+            width:20px;
+            height:20px;
+            border-radius:50%;
+            border:3px solid white;"></div>`,
+          iconSize: [20, 20]
         })
       }).addTo(this.instance);
 
@@ -72,11 +72,11 @@ const App = {
     },
 
     drawRoute(start, end) {
-      if (this.routingControl) {
-        this.routingControl.remove();
+      if (App.State.routingControl) {
+        App.State.routingControl.remove();
       }
 
-      this.routingControl = L.Routing.control({
+      App.State.routingControl = L.Routing.control({
         waypoints: [
           L.latLng(start.lat, start.lng),
           L.latLng(end.lat, end.lng)
@@ -94,6 +94,7 @@ const App = {
         }
       }).addTo(this.instance);
     }
+
   },
 
   // ==============================
@@ -136,10 +137,10 @@ const App = {
         (pos) => {
           const { latitude, longitude } = pos.coords;
 
-          if (App.Map.userMarker)
-            App.Map.userMarker.remove();
+          if (App.State.userMarker)
+            App.State.userMarker.remove();
 
-          App.Map.userMarker =
+          App.State.userMarker =
             L.marker([latitude, longitude])
               .addTo(App.Map.instance);
 
@@ -149,12 +150,14 @@ const App = {
         { enableHighAccuracy: true }
       );
     }
+
   },
 
   // ==============================
   // INIT
   // ==============================
   init() {
+
     App.Map.init();
 
     document.getElementById('btn-start')
@@ -180,6 +183,7 @@ const App = {
         });
       });
   }
+
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
